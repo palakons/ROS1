@@ -386,8 +386,9 @@ Now see your photo!
 
 You can see the quality and resolution of the camera!
 
-### 1.3.2. Insall camera packages
+### 1.3.2. Install camera packages on the TurtleBot3
 
+On TurtleBot3:
 ```shell
 cd ~/catkin_ws/src
 git clone https://github.com/UbiquityRobotics/raspicam_node.git
@@ -401,7 +402,11 @@ Then, try asking the turtlebot ti publish the image:
 roslaunch turtlebot3_bringup turtlebot3_rpicamera.launch
 ```
 
-and use `rqt_image_view` to show the image.
+On PC (with correctly configured MASTER IP Addresses), use `rqt_image_view` to show the image.
+
+```shell
+rqt_image_view
+```
 
 ![rqt_image_view](https://github.com/palakons/ROS1/blob/main/rqt_image_view.png?raw=true)
 

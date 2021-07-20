@@ -108,7 +108,7 @@ Should see this
 -I/usr/include/opencv4/opencv -I/usr/include/opencv4
 ```
 
-### 1.1.4. Eigen
+### 1.1.4. [Eigen](https://eigen.tuxfamily.org/)
 
 Install Eigen
 ```shell

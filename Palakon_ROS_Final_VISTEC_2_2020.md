@@ -512,7 +512,7 @@ To run on real TurtleBot3, instead of playing the BAG file above, we will bring 
 - On PC: Run teleop node
 
   ```shell
-  roslaunch turtlebot_teleop keyboard_teleop.launch
+  roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
   ```
 
 

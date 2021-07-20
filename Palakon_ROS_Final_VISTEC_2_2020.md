@@ -345,7 +345,7 @@ Above is the parameters for the ORB_SLAM3 algorithms. We can see that the node w
 
 ### 1.3.1. Confirm RPI Camera
 
-We follow the official [Raspberry Pi Camera tutorial](https://emanual.robotis.com/docs/en/platform/turtlebot3/appendix_raspi_cam/) to make sure that the RPI Camera is installed propoerly.
+We follow the official [Raspberry Pi Camera tutorial](https://emanual.robotis.com/docs/en/platform/turtlebot3/appendix_raspi_cam/) to make sure that the RPI Camera is installed properly.
 
 ```bash 
 ssh pi@<turtlebot's IP Address>
@@ -358,16 +358,16 @@ sudo raspi-config
 ```
 
 Select `Interfacing Options`, and `Camera`.
-After enabling the camera, you should see screen below with the message 'The camera interface is enabled' similar to below.
+After enabling the camera, you should see the screen below with the message 'The camera interface is enabled' similar to below.
 
 ![Camera Enable Screen](https://emanual.robotis.com/assets/images/platform/turtlebot3/appendix_raspi_cam/pi-cam-hardware-setting-5.png)
 
-Then select `ok`, `Finish`, and reboot the TurtleBot.
+Then select `ok`, `Finish`, and reboot the TurtleBot3.
 
 ```bash
 sudo reboot
 ```
-Access the turtlebot again:
+Access the TurtleBot3 again:
 
 ```bash 
 ssh pi@<turtlebot's IP Address>
@@ -379,7 +379,7 @@ raspistill -v -o test.jpg
 
 ```
 
-From PC (not turtlebot's) terminal, copy the newly taken photo to your PC.
+From the PC (not the TurtleBot3's) terminal, copy the newly taken photo to your PC.
 
 ```bash
 cd ~/catkin_ws
@@ -418,16 +418,16 @@ rqt_image_view
 
 ### 1.3.3. Calibrate the camera
 
-There are multiple ways on obtaining the camera *intrinsic paramters*, one of them is outlined below:
+There are multiple ways on obtaining the camera *intrinsic parameters*, one of them is outlined below:
 
 #### 1.3.3.1. Prepare the Calibration Pattern
-- Print out on a paper the [Checkerboard Pattern](https://www.mrpt.org/downloads/camera-calibration-checker-board_9x7.pdf). This particular pattern size is a `9x7` or `7x9` pattern (counting the *internal corners*). You can make it durable and your friend will borrow it to calibrate their cameras for years to come.
--  Attach the paper to a moveable, flat surface (corrugated board, future board, or a laptop, maybe...) we cause we need to move the pattern around in front of the camera. Or you could attach the pattern to a wall and move the camera; it is possible, but less convenience.
+- Print out on paper the [Checkerboard Pattern](https://www.mrpt.org/downloads/camera-calibration-checker-board_9x7.pdf). This particular pattern size is a `9x7` or `7x9` pattern (counting the *internal corners*). You can make it durable and your friend will borrow it to calibrate their cameras for years to come.
+-  Attach the paper to a moveable, flat surface (corrugated board, future board, or a laptop, maybe...) because we need to move the pattern around in front of the camera. Or you could attach the pattern to a wall and move the camera; it is possible, but less convenient.
 -  Measure the width of *one* square. It could be 0.02 m as the file mentioned, or a different size if you print it on, for example, an A3 paper.
 
 I used a different calibration pattern (a *loan for use* from a friend so I do not have to go through the steps above). The specifications are shown below:
 
-| Calibration Pattern | My friend's | Your |
+| Calibration Pattern | My friend's | This tutorial's |
 -|-|-
 | Size | `9x6` | `9x7` |
 | Square's width |  0.02373 m| 0.02 m ?? |
@@ -457,18 +457,18 @@ I used a different calibration pattern (a *loan for use* from a friend so I do n
 
 #### 1.3.3.3. Perform the calibration
 
-You will see the UI similar ot below: 
+You will see the UI similar to below: 
 
 ![UI for ROS1 calibration node]()
 
-- Move, and skew the pattern around to cover the camera field-of-view. 
+- Move, and skew the pattern around to cover the camera field of view. 
 - In each image frame, when the calibration node detects the pattern, it draws lines connecting the corners. 
 - When the system detects enough frames, the `save` button is enabled.
 - Click `Save`
   
 #### 1.3.3.4. See the calibration results
 
-We can see the same calibration results inside the terminal, in yaml, and text files.
+We can see the same calibration results inside the terminal, in yaml, and in text files.
 
 - From the Terminal
   ```bash
@@ -734,7 +734,7 @@ shell
 
 it means that the shell is looking for the python interpretor at the path `/usr/bin/python` which has not been existed. 
 
-In most case we do have the python interpreter, they are only at the different path; we will have to run a shell command to create a symbolic link.
+In most cases we do have the python interpreter, they are only at a different path; we will have to run a shell command to create a symbolic link.
 
 ```bash
 cd /usr/bin

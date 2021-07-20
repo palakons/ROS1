@@ -143,13 +143,13 @@ cd ORB_SLAM3
 chmod +x build.sh
 ```
 
-Prior to building the package, edit two source files as per [`operator/`](#operator).
-
 Then build:
 
 ```bash
 ./build.sh
 ```
+
+If there is an error, try editing two source files as per the [1.6.1. `operator/`](#161-operator) in [1.6. Troubleshooting](#16-troubleshooting).
 
 ### 1.2.2. Build [ROS wrapper for ORB-SLAM3](https://github.com/thien94/orb_slam3_ros_wrapper)
 
@@ -383,7 +383,7 @@ From PC (not turtlebot's) terminal, copy the newly taken photo to your PC.
 
 ```bash
 cd ~/catkin_ws
-cp pi@<turtlebot's IP Address>:~/test.jpg .
+scp pi@<turtlebot's IP Address>:~/test.jpg .
 ```
 
 Now see your photo!
@@ -713,7 +713,7 @@ Replace with
 find_package(OpenCV 4.0 REQUIRED PATHS "/usr/include/opencv4" )
 ```
 
-The `"/usr/include/opencv4"` was obtained from [Check opencv4](#check-opencv4)
+The `"/usr/include/opencv4"` was obtained from [1.1.3.1. Check opencv4](#1131-check-opencv4)
 ### 1.6.3. Resource not found: turtlebot_bringup
 ```bash
 Resource not found: turtlebot_bringup

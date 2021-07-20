@@ -396,7 +396,7 @@ sudo apt-get install ros-kinetic-compressed-image-transport ros-kinetic-camera-i
 cd ~/catkin_ws && catkin_make
 ```
 
-Then, try asking the turtlebot ti publish the image:
+Then, try asking the TurtleBot3 to publish the image:
 
 ```shell
 roslaunch turtlebot3_bringup turtlebot3_rpicamera.launch
@@ -413,7 +413,7 @@ rqt_image_view
 ### 1.3.3. Calibrate the camera
 
 Bring up camera
-On turtlebot
+On TurtleBot3
 
 ```shell
 raspicam_node

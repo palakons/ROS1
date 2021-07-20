@@ -5,7 +5,9 @@
 
 [![4x Video](https://img.youtube.com/vi/DjHpCrAqFkc/0.jpg)](https://www.youtube.com/watch?v=DjHpCrAqFkc)
 
-**Environment**: ROS1 Noetic / Ubuntu 20.04.2 LTS / TurtleBot3: Waffle Pi (Raspberry Pi Camera Module v2)
+**Environment**: ROS1 Noetic / Ubuntu 20.04.2 LTS / [TurtleBot3: Waffle Pi](https://www.robotis.us/turtlebot-3-waffle-pi/) ([Raspberry Pi Camera Module v2](https://www.raspberrypi.org/products/camera-module-v2/))
+
+**`.bashrc`**: MASTER: PC
 
 **Author**: palakon.k_s20@vistec.ac.th
 
@@ -26,11 +28,15 @@
       - [1.2.4.1. Line-by-line explanation](#1241-line-by-line-explanation)
   - [1.3. Setup Camera (skip for in-class demo)](#13-setup-camera-skip-for-in-class-demo)
     - [1.3.1. Confirm RPI Camera](#131-confirm-rpi-camera)
-    - [1.3.2. Insall camera packages](#132-insall-camera-packages)
+    - [1.3.2. Install camera packages on the TurtleBot3](#132-install-camera-packages-on-the-turtlebot3)
     - [1.3.3. Calibrate the camera](#133-calibrate-the-camera)
+      - [1.3.3.1. Prepare the Calibration Pattern](#1331-prepare-the-calibration-pattern)
+      - [1.3.3.2. Start the node system](#1332-start-the-node-system)
+      - [1.3.3.3. Perform the calibration](#1333-perform-the-calibration)
+      - [1.3.3.4. See the calibration results](#1334-see-the-calibration-results)
   - [1.4. Start SLAM](#14-start-slam)
-    - [1.4.1. Start BAG files](#141-start-bag-files)
-    - [1.4.2. For running with the Real TurtleBot3 (if in-class time allow)](#142-for-running-with-the-real-turtlebot3-if-in-class-time-allow)
+    - [1.4.1. SLAM from BAG file data](#141-slam-from-bag-file-data)
+    - [1.4.2. SLAM from the Real TurtleBot3 (if in-class time allow)](#142-slam-from-the-real-turtlebot3-if-in-class-time-allow)
   - [1.5. Bonus activities (skip for in-class demo)](#15-bonus-activities-skip-for-in-class-demo)
   - [1.6. Troubleshooting](#16-troubleshooting)
     - [1.6.1. `operator/`](#161-operator)
@@ -46,7 +52,7 @@
 
 ### 1.1.1. The Basics
 Install OpenGL, Glew, CMake:
-```shell
+```bash
 sudo apt install libgl1-mesa-dev
 sudo apt install libglew-dev
 sudo apt install cmake
@@ -54,7 +60,7 @@ sudo apt install cmake
 
 Extra dependency:
 
-```shell
+```bash
 sudo apt install libpython2.7-dev
 sudo apt install python3-pip
 sudo apt install pkg-config
@@ -65,7 +71,7 @@ sudo pip3 install numpy pyopengl Pillow pybind11
 ### 1.1.2. [Pangolin](https://awesomeopensource.com/project/uoip/pangolin)
 
 Install Pangolin
-```shell
+```bash
 cd ~
 git clone https://github.com/stevenlovegrove/Pangolin.git
 cd Pangolin
@@ -77,7 +83,7 @@ cmake --build .
 ### 1.1.3. OpenCV4
 Install OpenCV4 (this will take the whole night)
 
-```shell
+```bash
 # Install minimal prerequisites (Ubuntu 18.04 as reference)
 sudo apt update && sudo apt install -y cmake g++ wget unzip
 # Download and unpack sources
@@ -98,20 +104,20 @@ sudo make install
 
 #### 1.1.3.1. Check opencv4
 
-```shell
+```bash
 pkg-config --cflags opencv4
 ```
 
 Should see this
 
-```shell
+```bash
 -I/usr/include/opencv4/opencv -I/usr/include/opencv4
 ```
 
 ### 1.1.4. [Eigen](https://eigen.tuxfamily.org/)
 
 Install Eigen
-```shell
+```bash
 cd ~
 wget https://gitlab.com/libeigen/eigen/-/archive/3.3.9/eigen-3.3.9.tar.gz
 tar zxvf eigen-3.3.9.tar.gz
@@ -130,7 +136,7 @@ There are two steps:
 ### 1.2.1. Build ORB_SLAM3
 
 Install ORB_SLAM3 (which automatically installs DBoW2 and g2o)
-```shell
+```bash
 cd ~/catkin_ws/src
 git clone https://github.com/UZ-SLAMLab/ORB_SLAM3.git ORB_SLAM3
 cd ORB_SLAM3
@@ -141,13 +147,13 @@ Prior to building the package, edit two source files as per [`operator/`](#opera
 
 Then build:
 
-```shell
+```bash
 ./build.sh
 ```
 
 ### 1.2.2. Build [ROS wrapper for ORB-SLAM3](https://github.com/thien94/orb_slam3_ros_wrapper)
 
-```shell
+```bash
 cd ~/catkin_ws/src/ 
 git clone https://github.com/thien94/orb_slam3_ros_wrapper.git
 ```
@@ -162,7 +168,7 @@ set(ORB_SLAM3_DIR
 ```
 Then build the packages:
 
-```shell
+```bash
 cd ~/catkin_ws/
 catkin_make
 ```
@@ -257,17 +263,17 @@ Viewer.ViewpointZ: -3.5 # -1.8
 Viewer.ViewpointF: 500
 ```
 
-*When working with the camera from other than this system*, the parameters can be found by following the section [Calibrate the camera](#calibrate-the-camera).
+*When working with the camera from other than this system*, the parameters can be found by following the section [1.3.3. Calibrate the camera](#133-calibrate-the-camera).
 
 Camera fps:
 
-```shell
+```bash
 rostopic hz /raspicam_node/image/compressed
 ```
 
 Transformation from the camera to the IMU using `tf` package.
 
-```shell
+```bash
 rosrun rqt_tf_tree rqt_tf_tree
 rosrun tf tf_echo camera_rgb_frame imu_link
 ```
@@ -341,13 +347,13 @@ Above is the parameters for the ORB_SLAM3 algorithms. We can see that the node w
 
 We follow the official [Raspberry Pi Camera tutorial](https://emanual.robotis.com/docs/en/platform/turtlebot3/appendix_raspi_cam/) to make sure that the RPI Camera is installed propoerly.
 
-```shell 
+```bash 
 ssh pi@<turtlebot's IP Address>
 ```
 
 First, edit the camera configuration:
 
-```shell
+```bash
 sudo raspi-config
 ```
 
@@ -358,24 +364,24 @@ After enabling the camera, you should see screen below with the message 'The cam
 
 Then select `ok`, `Finish`, and reboot the TurtleBot.
 
-```shell
+```bash
 sudo reboot
 ```
 Access the turtlebot again:
 
-```shell 
+```bash 
 ssh pi@<turtlebot's IP Address>
 ```
 
 Take a photo: (say cheese!)
-```shell
+```bash
 raspistill -v -o test.jpg
 
 ```
 
 From PC (not turtlebot's) terminal, copy the newly taken photo to your PC.
 
-```shell
+```bash
 cd ~/catkin_ws
 cp pi@<turtlebot's IP Address>:~/test.jpg .
 ```
@@ -389,7 +395,7 @@ You can see the quality and resolution of the camera!
 ### 1.3.2. Install camera packages on the TurtleBot3
 
 On TurtleBot3:
-```shell
+```bash
 cd ~/catkin_ws/src
 git clone https://github.com/UbiquityRobotics/raspicam_node.git
 sudo apt-get install ros-kinetic-compressed-image-transport ros-kinetic-camera-info-manager
@@ -398,13 +404,13 @@ cd ~/catkin_ws && catkin_make
 
 Then, try asking the TurtleBot3 to publish the image:
 
-```shell
+```bash
 roslaunch turtlebot3_bringup turtlebot3_rpicamera.launch
 ```
 
 On PC (with correctly configured MASTER IP Addresses), use `rqt_image_view` to show the image.
 
-```shell
+```bash
 rqt_image_view
 ```
 
@@ -412,108 +418,236 @@ rqt_image_view
 
 ### 1.3.3. Calibrate the camera
 
-Bring up camera
-On TurtleBot3
+There are multiple ways on obtaining the camera *intrinsic paramters*, one of them is outlined below:
 
-```shell
-raspicam_node
-```
+#### 1.3.3.1. Prepare the Calibration Pattern
+- Print out on a paper the [Checkerboard Pattern](https://www.mrpt.org/downloads/camera-calibration-checker-board_9x7.pdf). This particular pattern size is a `9x7` or `7x9` pattern (counting the *internal corners*). You can make it durable and your friend will borrow it to calibrate their cameras for years to come.
+-  Attach the paper to a moveable, flat surface (corrugated board, future board, or a laptop, maybe...) we cause we need to move the pattern around in front of the camera. Or you could attach the pattern to a wall and move the camera; it is possible, but less convenience.
+-  Measure the width of *one* square. It could be 0.02 m as the file mentioned, or a different size if you print it on, for example, an A3 paper.
 
-```shell
-rosrun image_transport republish compressed in:=/raspicam_node/image/ raw out:=/camera/image_raw
-```
+I used a different calibration pattern (a *loan for use* from a friend so I do not have to go through the steps above). The specifications are shown below:
 
-```shell
-rosrun camera_calibration cameracalibrator.py --size 9x6 --square 0.02373 image:=/camera/image_raw camera:=/raspicam_node
-```
+| Calibration Pattern | My friend's | Your |
+-|-|-
+| Size | `9x6` | `9x7` |
+| Square's width |  0.02373 m| 0.02 m ?? |
 
-```shell
-mono pinhole calibration...
-D = [0.19890011251605139, -0.31768240010469145, 0.00225190429372325, -0.0016667252501190678, 0.0]
-K = [511.14379665531055, 0.0, 311.77052174481076, 0.0, 509.0205888729015, 247.45247029125034, 0.0, 0.0, 1.0]
-R = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
-P = [525.563232421875, 0.0, 310.04905644909013, 0.0, 0.0, 524.0479125976562, 247.7008932694298, 0.0, 0.0, 0.0, 1.0, 0.0]
-None
-# oST version 5.0 parameters
+#### 1.3.3.2. Start the node system
+
+  Bring up TurtleBot3's camera
+    
+- On TurtleBot3, 
+
+  ```bash
+  rosrun raspicam_node raspicam_node
+  ```
+
+- On PC, 
+  - Terminal#1: To provide an uncompressed the video stream
+    ```bash
+    rosrun image_transport republish compressed in:=/raspicam_node/image/ raw out:=/camera/image_raw
+    ```
+
+  - Terminal#2: To start the calibration node
+    
+    Use your `--size` and `--square` parameters as per [1.3.3.1.](#1331-prepare-the-calibration-pattern); it could look similar to below:
+    ```bash
+    rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.02 image:=/camera/image_raw camera:=/raspicam_node
+    ```
+
+#### 1.3.3.3. Perform the calibration
+
+You will see the UI similar ot below: 
+
+![UI for ROS1 calibration node]()
+
+- Move, and skew the pattern around to cover the camera field-of-view. 
+- In each image frame, when the calibration node detects the pattern, it draws lines connecting the corners. 
+- When the system detects enough frames, the `save` button is enabled.
+- Click `Save`
+  
+#### 1.3.3.4. See the calibration results
+
+We can see the same calibration results inside the terminal, in yaml, and text files.
+
+- From the Terminal
+  ```bash
+  mono pinhole calibration...
+  D = [0.19890011251605139, -0.31768240010469145, 0.00225190429372325, -0.0016667252501190678, 0.0]
+  K = [511.14379665531055, 0.0, 311.77052174481076, 0.0, 509.0205888729015, 247.45247029125034, 0.0, 0.0, 1.0]
+  R = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
+  P = [525.563232421875, 0.0, 310.04905644909013, 0.0, 0.0, 524.0479125976562, 247.7008932694298, 0.0, 0.0, 0.0, 1.0, 0.0]
+  None
+  # oST version 5.0 parameters
 
 
-[image]
+  [image]
 
-width
-640
+  width
+  640
 
-height
-480
+  height
+  480
 
-[narrow_stereo]
+  [narrow_stereo]
 
-camera matrix
-511.143797 0.000000 311.770522
-0.000000 509.020589 247.452470
-0.000000 0.000000 1.000000
+  camera matrix
+  511.143797 0.000000 311.770522
+  0.000000 509.020589 247.452470
+  0.000000 0.000000 1.000000
 
-distortion
-0.198900 -0.317682 0.002252 -0.001667 0.000000
+  distortion
+  0.198900 -0.317682 0.002252 -0.001667 0.000000
 
-rectification
-1.000000 0.000000 0.000000
-0.000000 1.000000 0.000000
-0.000000 0.000000 1.000000
+  rectification
+  1.000000 0.000000 0.000000
+  0.000000 1.000000 0.000000
+  0.000000 0.000000 1.000000
 
-projection
-525.563232 0.000000 310.049056 0.000000
-0.000000 524.047913 247.700893 0.000000
-0.000000 0.000000 1.000000 0.000000
+  projection
+  525.563232 0.000000 310.049056 0.000000
+  0.000000 524.047913 247.700893 0.000000
+  0.000000 0.000000 1.000000 0.000000
 
-('Wrote calibration data to', '/tmp/calibrationdata.tar.gz')
+  ('Wrote calibration data to', '/tmp/calibrationdata.tar.gz')
+  ```
+- From the output files:
 
-```
+  Let's copy it to `~/catkin_ws` for later references: calibration results along with the image frames:
+
+  ```bash
+  cp /tmp/calibrationdata.tar.gz ~/catkin_ws
+  ```
+
+  ![Calibration output](https://github.com/palakons/ROS1/blob/main/calibration_results.png?raw=true)
+
+  - ost.txt
+
+    ```
+    # oST version 5.0 parameters
+
+
+    [image]
+
+    width
+    640
+
+    height
+    480
+
+    [narrow_stereo]
+
+    camera matrix
+    511.143797 0.000000 311.770522
+    0.000000 509.020589 247.452470
+    0.000000 0.000000 1.000000
+
+    distortion
+    0.198900 -0.317682 0.002252 -0.001667 0.000000
+
+    rectification
+    1.000000 0.000000 0.000000
+    0.000000 1.000000 0.000000
+    0.000000 0.000000 1.000000
+
+    projection
+    507.718292 0.000000 307.882255 0.000000
+    0.000000 504.573120 249.457519 0.000000
+    0.000000 0.000000 1.000000 0.000000
+    ```
+
+  - YAML file:
+
+    ```yaml
+    image_width: 640
+    image_height: 480
+    camera_name: narrow_stereo
+    camera_matrix:
+      rows: 3
+      cols: 3
+      data: [511.1438 ,   0.     , 311.77052,
+              1.     , 509.02059, 247.45247,
+              2.     ,   0.     ,   1.     ]
+    distortion_model: plumb_bob
+    distortion_coefficients:
+      rows: 1
+      cols: 5
+      data: [0.198900, -0.317682, 0.002252, -0.001667, 0.000000]
+    rectification_matrix:
+      rows: 3
+      cols: 3
+      data: [1., 0., 0.,
+            0., 1., 0.,
+            0., 0., 1.]
+    projection_matrix:
+      rows: 3
+      cols: 4
+      data: [507.71829,   0.     , 307.88226,   0.     ,
+              1.     , 504.57312, 249.45752,   0.     ,
+              2.     ,   0.     ,   1.     ,   0.     ]
+    ```
 
 
 ## 1.4. Start SLAM
 
-Make sure `~/.bashrc` files on both PC and TurtleBot3 are set correctly.
+There are two ways we can try in this tutorial: BAG file (VLL Room [VISTEC](vistec.ac.th)/Loop-closures), and video stream from the TurtleBot3
 
-Let's set the PC as the MASTER in tutorials:
+### 1.4.1. SLAM from BAG file data
+  
+  On MASTER/PC
 
-On MASTER/PC
+  Starting from all terminal closed...
 
-- Terminal #1
-  ```shell
-  roscore
-  ```
-- Terminal #2: Launch the `launchfile`
+  - Terminal #1: Make sure the `roscore` is up below any other node
+    ```bash
+    roscore
+    ```
+  - Terminal #2: Launch the `launchfile`
 
-  ```shell
-  roslaunch ~/catkin_ws/orb_slam3_mono_waffle_pi.launch
-  ```
+    ```bash
+    roslaunch ~/catkin_ws/orb_slam3_mono_waffle_pi.launch
+    ```
 
-### 1.4.1. Start BAG files 
-- Download [BAG file](https://vistec-my.sharepoint.com/:u:/g/personal/palakon_k_s20_vistec_ac_th/EUcxgW82HLxOsKVx4ZWsH6wBG2HSVLeCOWiU9KAV1KvR-w?e=MO6nBt) (~1.5GB) and move it to `~/catkin_ws`.
-- Run BAG file
-  ```shell
-  cd ~/catkin_ws
-  rosbag play ORB_SLAM3_Monocular_2021-07-18-08-27-30.bag
-  ```
+- Terminal #3: Play the BAG file 
+  - Download [BAG file](https://vistec-my.sharepoint.com/:u:/g/personal/palakon_k_s20_vistec_ac_th/EUcxgW82HLxOsKVx4ZWsH6wBG2HSVLeCOWiU9KAV1KvR-w?e=MO6nBt) (~1.5GB) and move it to `~/catkin_ws`.
+  - Run BAG file
+    ```bash
+    cd ~/catkin_ws
+    rosbag play ORB_SLAM3_Monocular_2021-07-18-08-27-30.bag
+    ```
 
-### 1.4.2. For running with the Real TurtleBot3 (if in-class time allow)
+### 1.4.2. SLAM from the Real TurtleBot3 (if in-class time allow)
 
-To run on real TurtleBot3, instead of playing the BAG file above, we will bring up the (correctly configured on `~/.bachrc`) TurtleBot3.
+To run on real TurtleBot3, instead of playing the BAG file above, we will bring up the TurtleBot3.
 
+Starting from all terminal closed...
+
+- On MASTER/PC
+
+  - Terminal #1: Make sure the `roscore` is up below any other node
+    ```bash
+    roscore
+    ```
+  - Terminal #2: Launch the `launchfile`
+
+    ```bash
+    roslaunch ~/catkin_ws/orb_slam3_mono_waffle_pi.launch
+    ```
+  - Terminal #3: Teleop node
+
+    ```bash
+    roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
+    ```
 - On TurtleBot3
   - Terminal #1: Bring up TurtleBot3
-    ```shell
+    ```bash
     roslaunch turtlebot3_bringup turtlebot3_robot.launch
     ```
   - Terminal #2: Start RPI Camera
-    ```shell
+    ```bash
     roslaunch turtlebot3_bringup turtlebot3_rpicamera.launch
     ```
-- On PC: Run teleop node
 
-  ```shell
-  roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
-  ```
 
 
 ## 1.5. Bonus activities (skip for in-class demo)
@@ -530,7 +664,7 @@ For advanced users, you are encouraged to try additional tasks below:
 
 ### 1.6.1. `operator/`
 If we see below error during building the ORB-SLAM3:
-```shell
+```bash
 .../catkin_ws/src/ORB_SLAM3/src/LocalMapping.cc:628:49: error: no match for ‘operator/’ (operand types are ‘cv::Matx<float, 3, 1>’ and ‘float’)
   628 |                 x3D = x3D_h.get_minor<3,1>(0,0) / x3D_h(3);
       |                       ~~~~~~~~~~~~~~~~~~~~~~~~~ ^ ~~~~~~~~
@@ -581,7 +715,7 @@ find_package(OpenCV 4.0 REQUIRED PATHS "/usr/include/opencv4" )
 
 The `"/usr/include/opencv4"` was obtained from [Check opencv4](#check-opencv4)
 ### 1.6.3. Resource not found: turtlebot_bringup
-```shell
+```bash
 Resource not found: turtlebot_bringup
 ```
 
@@ -602,7 +736,7 @@ it means that the shell is looking for the python interpretor at the path `/usr/
 
 In most case we do have the python interpreter, they are only at the different path; we will have to run a shell command to create a symbolic link.
 
-```shell
+```bash
 cd /usr/bin
 sudo ln -fs /usr/bin/python3 python
 ```

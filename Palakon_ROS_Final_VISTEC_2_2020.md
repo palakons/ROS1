@@ -457,14 +457,22 @@ I used a different calibration pattern (a *loan for use* from a friend so I do n
 
 #### 1.3.3.3. Perform the calibration
 
-You will see the UI similar to below: 
-
-![UI for ROS1 calibration node]()
-
 - Move, and skew the pattern around to cover the camera field of view. 
 - In each image frame, when the calibration node detects the pattern, it draws lines connecting the corners. 
-- When the system detects enough frames, the `save` button is enabled.
-- Click `Save`
+
+- When the system detects enough frames, the `CALIBRATE` button is enabled.
+
+  ![UI for ROS1 calibration node](https://github.com/palakons/ROS1/blob/main/calibrate.png?raw=true)
+
+- Click `CALIBRATE` 
+  
+  ![Calibrating](https://github.com/palakons/ROS1/blob/main/calibrating.png?raw=true)
+
+- Wait for the calibration process
+  
+  ![Calibration done](https://github.com/palakons/ROS1/blob/main/calibration_ready.png?raw=true)
+
+- Click `SAVE`, and `COMMIT`. According to the [Package Summary](http://wiki.ros.org/camera_calibration), *When the user presses the `CALIBRATE` button, the node computes the camera calibration parameters. When the user clicks `COMMIT`, the node uploads these new calibration parameters to the camera driver using a service call.*
   
 #### 1.3.3.4. See the calibration results
 

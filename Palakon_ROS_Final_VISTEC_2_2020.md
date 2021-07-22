@@ -175,8 +175,8 @@ catkin_make
 
 ### 1.2.3. yaml for waffle
 
-
-Copy-paste content below to `~/catkin_ws/src/ORB_SLAM3/Examples/Monocular-Inertial/waffle.yaml`:
+Create a new file `~/catkin_ws/src/ORB_SLAM3/Examples/Monocular-Inertial/waffle.yaml`.
+Copy-paste content below to it:
 
 ```yaml
 %YAML:1.0

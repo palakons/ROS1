@@ -1,9 +1,15 @@
+### 0.1. Monocular ORB-SLAM3 on TurtleBot3: Waffle Pi   ###
 
-# 1. Monocular ORB-SLAM3 on TurtleBot3: Waffle Pi
 
 **Description**: This tutorial demonstrates SLAM with the newly-released ORB_SLAM3 on a TurtleBot3 Waffle and ROS1. With the bag file provided, we should get the results below: 
 
 [![4x Video](https://img.youtube.com/vi/DjHpCrAqFkc/0.jpg)](https://www.youtube.com/watch?v=DjHpCrAqFkc)
+
+The system overview for the essential part is shown below:
+
+![overview](overview.png)
+
+From the compressed video stream from TurtleBot3, a node republishes and uncompresses the stream. The wrapper node will then take the video stream and feed it into the actual ORB_SLAM3 node to perform the SLAM.
 
 **Environment**: ROS1 Noetic / Ubuntu 20.04.2 LTS / [TurtleBot3: Waffle Pi](https://www.robotis.us/turtlebot-3-waffle-pi/) ([Raspberry Pi Camera Module v2](https://www.raspberrypi.org/products/camera-module-v2/))
 
@@ -13,45 +19,50 @@
 
 **Table of content:**
 
-- [1. Monocular ORB-SLAM3 on TurtleBot3: Waffle Pi](#1-monocular-orb-slam3-on-turtlebot3-waffle-pi)
-  - [1.1. Installing Prerequisites](#11-installing-prerequisites)
-    - [1.1.1. The Basics](#111-the-basics)
-    - [1.1.2. Pangolin](#112-pangolin)
-    - [1.1.3. OpenCV4](#113-opencv4)
-      - [1.1.3.1. Check opencv4](#1131-check-opencv4)
-    - [1.1.4. Eigen](#114-eigen)
-  - [1.2. Setup our SLAM System](#12-setup-our-slam-system)
-    - [1.2.1. Build ORB_SLAM3](#121-build-orb_slam3)
-    - [1.2.2. Build ROS wrapper for ORB-SLAM3](#122-build-ros-wrapper-for-orb-slam3)
-    - [1.2.3. yaml for waffle](#123-yaml-for-waffle)
-      - [1.2.3.1. In case not using TurtleBot3: Waffle Pi Camera](#1231-in-case-not-using-turtlebot3-waffle-pi-camera)
-    - [1.2.4. Create `launchfile`](#124-create-launchfile)
-      - [1.2.4.1. Line-by-line explanation](#1241-line-by-line-explanation)
-  - [1.3. Setup Camera (skip for in-class demo)](#13-setup-camera-skip-for-in-class-demo)
-    - [1.3.1. Confirm RPI Camera](#131-confirm-rpi-camera)
-    - [1.3.2. Install camera packages on the TurtleBot3](#132-install-camera-packages-on-the-turtlebot3)
-    - [1.3.3. Calibrate the camera](#133-calibrate-the-camera)
-      - [1.3.3.1. Prepare the Calibration Pattern](#1331-prepare-the-calibration-pattern)
-      - [1.3.3.2. Start the node system](#1332-start-the-node-system)
-      - [1.3.3.3. Perform the calibration](#1333-perform-the-calibration)
-      - [1.3.3.4. See the calibration results](#1334-see-the-calibration-results)
-  - [1.4. Start SLAM](#14-start-slam)
-    - [1.4.1. SLAM from BAG file data](#141-slam-from-bag-file-data)
-    - [1.4.2. SLAM from the Real TurtleBot3 (if in-class time allow)](#142-slam-from-the-real-turtlebot3-if-in-class-time-allow)
-  - [1.5. Bonus activities (skip for in-class demo)](#15-bonus-activities-skip-for-in-class-demo)
-  - [1.6. Troubleshooting](#16-troubleshooting)
-    - [1.6.1. `operator/`](#161-operator)
-    - [1.6.2. `CMakelists.txt` error for `opencv` not found](#162-cmakeliststxt-error-for-opencv-not-found)
-    - [1.6.3. Resource not found: turtlebot_bringup](#163-resource-not-found-turtlebot_bringup)
-    - [1.6.4. Bad (python) interpreter](#164-bad-python-interpreter)
-  - [1.7. Additional Resources](#17-additional-resources)
+- [1. Installing Prerequisites](#1-installing-prerequisites)
+  - [1.1. The Basics](#11-the-basics)
+  - [1.2. Pangolin](#12-pangolin)
+  - [1.3. OpenCV4](#13-opencv4)
+    - [1.3.1. Download the packages:](#131-download-the-packages)
+    - [1.3.2. Build OpenCV4](#132-build-opencv4)
+    - [1.3.3. Check OpenCV4](#133-check-opencv4)
+  - [1.4. Eigen](#14-eigen)
+- [2. Setup our SLAM System](#2-setup-our-slam-system)
+  - [2.1. Build ORB_SLAM3](#21-build-orb_slam3)
+  - [2.2. Build ROS wrapper for ORB-SLAM3](#22-build-ros-wrapper-for-orb-slam3)
+  - [2.3. yaml for waffle](#23-yaml-for-waffle)
+    - [2.3.1. In case not using a Camera from TurtleBot3: Waffle Pi](#231-in-case-not-using-a-camera-from-turtlebot3-waffle-pi)
+  - [2.4. Create `launchfile`](#24-create-launchfile)
+    - [2.4.1. Line-by-line explanation](#241-line-by-line-explanation)
+- [3. Setup Camera (skip for in-class demo)](#3-setup-camera-skip-for-in-class-demo)
+  - [3.1. Confirm RPI Camera](#31-confirm-rpi-camera)
+  - [3.2. Install camera packages on the TurtleBot3](#32-install-camera-packages-on-the-turtlebot3)
+  - [3.3. Calibrate the camera](#33-calibrate-the-camera)
+    - [3.3.1. Prepare the Calibration Pattern](#331-prepare-the-calibration-pattern)
+    - [3.3.2. Start the node system](#332-start-the-node-system)
+    - [3.3.3. Perform the calibration](#333-perform-the-calibration)
+    - [3.3.4. See the calibration results](#334-see-the-calibration-results)
+- [4. Start SLAM](#4-start-slam)
+  - [4.1. SLAM from BAG file data](#41-slam-from-bag-file-data)
+  - [4.2. SLAM from the Real TurtleBot3 (if in-class time allow)](#42-slam-from-the-real-turtlebot3-if-in-class-time-allow)
+- [5. Bonus activities (skip for in-class demo)](#5-bonus-activities-skip-for-in-class-demo)
+- [6. Troubleshooting](#6-troubleshooting)
+  - [6.1. `operator/`](#61-operator)
+  - [6.2. `CMakelists.txt` error for `opencv` not found](#62-cmakeliststxt-error-for-opencv-not-found)
+  - [6.3. Resource not found: turtlebot_bringup](#63-resource-not-found-turtlebot_bringup)
+  - [6.4. Bad (python) interpreter](#64-bad-python-interpreter)
+  - [6.5. CMake: `MESSAGE` called with incorrect number of arguments](#65-cmake-message-called-with-incorrect-number-of-arguments)
+  - [6.6. `[orb_slam3_mono_node-x] process has died`](#66-orb_slam3_mono_node-x-process-has-died)
+    - [6.6.1. Segmentation fault (core dumped)](#661-segmentation-fault-core-dumped)
+    - [6.6.2. OpenCV Error: Assertion failed](#662-opencv-error-assertion-failed)
+- [7. Additional Resources](#7-additional-resources)
 
 
 
-## 1.1. Installing Prerequisites
+## 1. Installing Prerequisites
 
 
-### 1.1.1. The Basics
+### 1.1. The Basics
 Install OpenGL, Glew, CMake:
 ```bash
 sudo apt install libgl1-mesa-dev
@@ -69,7 +80,7 @@ sudo apt install libegl1-mesa-dev libwayland-dev libxkbcommon-dev wayland-protoc
 sudo pip3 install numpy pyopengl Pillow pybind11
 ```
 
-### 1.1.2. [Pangolin](https://awesomeopensource.com/project/uoip/pangolin)
+### 1.2. [Pangolin](https://awesomeopensource.com/project/uoip/pangolin)
 
 Install Pangolin
 ```bash
@@ -81,8 +92,10 @@ cd build
 cmake ..
 cmake --build .
 ```
-### 1.1.3. OpenCV4
+### 1.3. OpenCV4
 Install OpenCV4 (this will take the whole night)
+
+#### 1.3.1. Download the packages:
 
 ```bash
 # Install minimal prerequisites (Ubuntu 18.04 as reference)
@@ -94,16 +107,23 @@ wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/mast
 unzip opencv.zip
 unzip opencv_contrib.zip
 rm *.zip
+```
+
+#### 1.3.2. Build OpenCV4
+
+
+```bash
 # Create build directory and switch into it
 mkdir -p build && cd build
 # Configure
 cmake -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib-master/modules ../opencv-master
+make -j5
 # Build
 cmake --build .
 sudo make install
 ```
 
-#### 1.1.3.1. Check opencv4
+#### 1.3.3. Check OpenCV4
 
 ```bash
 pkg-config --cflags opencv4
@@ -115,7 +135,7 @@ Should see this
 -I/usr/include/opencv4/opencv -I/usr/include/opencv4
 ```
 
-### 1.1.4. [Eigen](https://eigen.tuxfamily.org/)
+### 1.4. [Eigen](https://eigen.tuxfamily.org/)
 
 Install Eigen
 ```bash
@@ -130,11 +150,12 @@ cmake ..
 sudo make install
 ```
 
-## 1.2. Setup our SLAM System
+
+## 2. Setup our SLAM System
 
 There are two steps: 
 
-### 1.2.1. Build ORB_SLAM3
+### 2.1. Build ORB_SLAM3
 
 Install ORB_SLAM3 (which automatically installs DBoW2 and g2o)
 ```bash
@@ -153,7 +174,7 @@ Then build:
 
 If there is an error, try editing two source files as per the [1.6.1. `operator/`](#161-operator) in [1.6. Troubleshooting](#16-troubleshooting).
 
-### 1.2.2. Build [ROS wrapper for ORB-SLAM3](https://github.com/thien94/orb_slam3_ros_wrapper)
+### 2.2. Build [ROS wrapper for ORB-SLAM3](https://github.com/thien94/orb_slam3_ros_wrapper)
 
 ```bash
 cd ~/catkin_ws/src/ 
@@ -175,7 +196,7 @@ cd ~/catkin_ws/
 catkin_make
 ```
 
-### 1.2.3. yaml for waffle
+### 2.3. yaml for waffle
 
 Create a new file `~/catkin_ws/src/ORB_SLAM3/Examples/Monocular-Inertial/waffle.yaml`.
 Copy-paste content below to it:
@@ -265,17 +286,17 @@ Viewer.ViewpointZ: -3.5 # -1.8
 Viewer.ViewpointF: 500
 ```
 
-#### 1.2.3.1. In case not using TurtleBot3: Waffle Pi Camera 
+#### 2.3.1. In case not using a Camera from TurtleBot3: Waffle Pi  
 
-*When working with the camera from other than this system*, the parameters can be found by following the section [1.3.3. Calibrate the camera](#133-calibrate-the-camera).
+*When working with the camera from other than this system*, to update the yaml file above, the parameters can be found by following the section [1.3.3. Calibrate the camera](#133-calibrate-the-camera), and shell commands below:
 
-Camera fps:
+Camera fps to update `Camera.fps:`:
 
   ```bash
   rostopic hz /raspicam_node/image/compressed
   ```
 
-Transformation from the camera to the IMU using `tf` package.
+Transformation from the camera to the IMU using `tf` package to update `Tbc: !!opencv-matrix`:
 
   ```bash
   rosrun rqt_tf_tree rqt_tf_tree
@@ -283,7 +304,7 @@ Transformation from the camera to the IMU using `tf` package.
   ```
 
 
-### 1.2.4. Create `launchfile`
+### 2.4. Create `launchfile`
 
 Create the `launchfile` at `~/catkin_ws/orb_slam3_mono_waffle_pi.launch` with content below:
 
@@ -312,7 +333,7 @@ Create the `launchfile` at `~/catkin_ws/orb_slam3_mono_waffle_pi.launch` with co
 </launch>
 ```
 
-#### 1.2.4.1. Line-by-line explanation
+#### 2.4.1. Line-by-line explanation
 
 
 ```xml
@@ -345,9 +366,9 @@ The video stream from `rpicam` is compressed by hardware, by default for the goo
 ```
 Above is the parameters for the ORB_SLAM3 algorithms. We can see that the node will take our `waffle.yaml` as the `settings_file` argument.
 
-## 1.3. Setup Camera (skip for in-class demo)
+## 3. Setup Camera (skip for in-class demo)
 
-### 1.3.1. Confirm RPI Camera
+### 3.1. Confirm RPI Camera
 
 We follow the official [Raspberry Pi Camera tutorial](https://emanual.robotis.com/docs/en/platform/turtlebot3/appendix_raspi_cam/) to make sure that the RPI Camera is installed properly.
 
@@ -396,7 +417,7 @@ Now see your photo!
 
 You can see the quality and resolution of the camera!
 
-### 1.3.2. Install camera packages on the TurtleBot3
+### 3.2. Install camera packages on the TurtleBot3
 
 On TurtleBot3:
 ```bash
@@ -420,11 +441,11 @@ rqt_image_view
 
 ![rqt_image_view](https://github.com/palakons/ROS1/blob/main/rqt_image_view.png?raw=true)
 
-### 1.3.3. Calibrate the camera
+### 3.3. Calibrate the camera
 
 There are multiple ways on obtaining the camera *intrinsic parameters*, one of them is outlined below:
 
-#### 1.3.3.1. Prepare the Calibration Pattern
+#### 3.3.1. Prepare the Calibration Pattern
 - Print out on paper the [Checkerboard Pattern](https://www.mrpt.org/downloads/camera-calibration-checker-board_9x7.pdf). This particular pattern size is a `9x7` or `7x9` pattern (counting the *internal corners*). You can make it durable and your friend will borrow it to calibrate their cameras for years to come.
 -  Attach the paper to a moveable, flat surface (corrugated board, future board, or a laptop, maybe...) because we need to move the pattern around in front of the camera. Or you could attach the pattern to a wall and move the camera; it is possible, but less convenient.
 -  Measure the width of *one* square. It could be 0.02 m as the file mentioned, or a different size if you print it on, for example, an A3 paper.
@@ -432,11 +453,11 @@ There are multiple ways on obtaining the camera *intrinsic parameters*, one of t
 I used a different calibration pattern (a *loan for use* from a friend so I do not have to go through the steps above). The specifications are shown below:
 
 | Calibration Pattern | My friend's | This tutorial's |
--|-|-
-| Size | `9x6` | `9x7` |
-| Square's width |  0.02373 m| 0.02 m ?? |
+| ------------------- | ----------- | --------------- |
+| Size                | `9x6`       | `9x7`           |
+| Square's width      | 0.02373 m   | 0.02 m ??       |
 
-#### 1.3.3.2. Start the node system
+#### 3.3.2. Start the node system
 
   Bring up TurtleBot3's camera
     
@@ -459,7 +480,7 @@ I used a different calibration pattern (a *loan for use* from a friend so I do n
     rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.02 image:=/camera/image_raw camera:=/raspicam_node
     ```
 
-#### 1.3.3.3. Perform the calibration
+#### 3.3.3. Perform the calibration
 
 - Move, and skew the pattern around to cover the camera field of view. 
 - In each image frame, when the calibration node detects the pattern, it draws lines connecting the corners. 
@@ -478,7 +499,7 @@ I used a different calibration pattern (a *loan for use* from a friend so I do n
 
 - Click `SAVE`, and `COMMIT`. According to the [Package Summary](http://wiki.ros.org/camera_calibration), *When the user presses the `CALIBRATE` button, the node computes the camera calibration parameters. When the user clicks `COMMIT`, the node uploads these new calibration parameters to the camera driver using a service call.*
   
-#### 1.3.3.4. See the calibration results
+#### 3.3.4. See the calibration results
 
 We can see the same calibration results inside the terminal, in yaml, and in text files.
 
@@ -600,11 +621,11 @@ We can see the same calibration results inside the terminal, in yaml, and in tex
     ```
 
 
-## 1.4. Start SLAM
+## 4. Start SLAM
 
 There are two ways we can try in this tutorial: BAG file (VLL Room [VISTEC](vistec.ac.th)/Loop-closures), and video stream from the TurtleBot3
 
-### 1.4.1. SLAM from BAG file data
+### 4.1. SLAM from BAG file data
   
   On MASTER/PC
 
@@ -628,7 +649,7 @@ There are two ways we can try in this tutorial: BAG file (VLL Room [VISTEC](vist
     rosbag play ORB_SLAM3_Monocular_2021-07-18-08-27-30.bag
     ```
 
-### 1.4.2. SLAM from the Real TurtleBot3 (if in-class time allow)
+### 4.2. SLAM from the Real TurtleBot3 (if in-class time allow)
 
 To run on real TurtleBot3, instead of playing the BAG file above, we will bring up the TurtleBot3.
 
@@ -665,19 +686,19 @@ Starting from all terminal closed...
 
 
 
-## 1.5. Bonus activities (skip for in-class demo)
+## 5. Bonus activities (skip for in-class demo)
 For advanced users, you are encouraged to try additional tasks below:
-| Tasks | Level |
-| --- | ----------- |
-| Check what messages are published from `orb_slam3_mono_node` node | One shell cmd |
-| Visualize the published data in `rviz` | One shell cmd and correct `rviz settings` |
-| With the published data, perform 3D SLAM using RTAB-Map | Install RTAB-Map package and bride data/parameters correctly |
-| Instead of the BAG file or the TurtleBot3, run the SLAM on Gazebo | One shell cmd and ensure correct topic names |
-| ORB_SLAM3 on Monocular camera and the IMU | Update setting/calibration in the yaml file |
+| Tasks                                                             | Level                                                        |
+| ----------------------------------------------------------------- | ------------------------------------------------------------ |
+| Check what messages are published from `orb_slam3_mono_node` node | One shell cmd                                                |
+| Visualize the published data in `rviz`                            | One shell cmd and correct `rviz settings`                    |
+| With the published data, perform 3D SLAM using RTAB-Map           | Install RTAB-Map package and bride data/parameters correctly |
+| Instead of the BAG file or the TurtleBot3, run the SLAM on Gazebo | One shell cmd and ensure correct topic names                 |
+| ORB_SLAM3 on Monocular camera and the IMU                         | Update setting/calibration in the yaml file                  |
 
-## 1.6. Troubleshooting
+## 6. Troubleshooting
 
-### 1.6.1. `operator/`
+### 6.1. `operator/`
 If we see below error during building the ORB-SLAM3:
 ```bash
 .../catkin_ws/src/ORB_SLAM3/src/LocalMapping.cc:628:49: error: no match for ‘operator/’ (operand types are ‘cv::Matx<float, 3, 1>’ and ‘float’)
@@ -708,7 +729,7 @@ x3D = cv::Matx31f(x3D_h.get_minor<3,1>(0,0)(0) / x3D_h(3), x3D_h.get_minor<3,1>(
 on both source files `~/catkin_ws/src/ORB_SLAM3/src/CameraModels/KannalaBrandt8.cpp` and `~/catkin_ws/src/ORB_SLAM3/src/LocalMapping.cc`
 
 
-### 1.6.2. `CMakelists.txt` error for `opencv` not found
+### 6.2. `CMakelists.txt` error for `opencv` not found
 
 Edit `~/catkin_ws/src/ORB_SLAM3/CMakeLists.txt` at line 37:
 
@@ -729,7 +750,7 @@ find_package(OpenCV 4.0 REQUIRED PATHS "/usr/include/opencv4" )
 ```
 
 The `"/usr/include/opencv4"` was obtained from [1.1.3.1. Check opencv4](#1131-check-opencv4)
-### 1.6.3. Resource not found: turtlebot_bringup
+### 6.3. Resource not found: turtlebot_bringup
 ```bash
 Resource not found: turtlebot_bringup
 ```
@@ -737,7 +758,7 @@ Resource not found: turtlebot_bringup
 Edit the launch file to seek `turtlebot3_bringup` instead.
 
 
-### 1.6.4. Bad (python) interpreter
+### 6.4. Bad (python) interpreter
 
 When seeing the error messages similar to below: 
 
@@ -755,7 +776,46 @@ cd /usr/bin
 sudo ln -fs /usr/bin/python3 python
 ```
 
-## 1.7. Additional Resources
+### 6.5. CMake: `MESSAGE` called with incorrect number of arguments 
+
+Can be solved by commenting out the line 45 of `~/catkin_ws/src/ORB_SLAM3/CMakeLists.txt`:
+
+```cmake
+...
+endif()
+
+MESSAGE("OPENCV VERSION:")
+#MESSAGE(${OpenCV_VERSION})
+
+find_package(Eigen3 3.1.0 REQUIRED)
+...
+```
+### 6.6. `[orb_slam3_mono_node-x] process has died`
+
+When seeing the error messages similar to below:
+
+![process has died](process_died.png)
+
+It is because the `Mono` node inside `ORB_SLAM3` package has failed running. We could investigate further by running:
+
+```bash
+rosrun ORB_SLAM3 Mono ~/catkin_ws/ORB_SLAM3/Vocabulary/ORBvoc.txt ~/catkin_ws/src/ORB_SLAM3/Examples/Monocular-Inertial/waffle.yaml
+```
+Observe the output from the terminal, they can be one of the two cases below:
+
+#### 6.6.1. Segmentation fault (core dumped)
+
+
+![segmentation Faults](seg_faults.png)
+(cr. Joe Chu)
+
+#### 6.6.2. OpenCV Error: Assertion failed
+
+![process has died](opencv_dup.png)
+(cr. Naris)
+
+
+## 7. Additional Resources
 For additional resources please visit below:
 -  [ORM_SLAM3](https://github.com/UZ-SLAMLab/ORB_SLAM3) 
 - [ROS communities](http://wiki.ros.org/)

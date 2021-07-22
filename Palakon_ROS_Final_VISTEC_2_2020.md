@@ -148,6 +148,7 @@ Then build:
 
 ```bash
 ./build.sh
+./build_ros.sh
 ```
 
 If there is an error, try editing two source files as per the [1.6.1. `operator/`](#161-operator) in [1.6. Troubleshooting](#16-troubleshooting).

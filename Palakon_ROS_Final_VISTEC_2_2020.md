@@ -734,13 +734,12 @@ Edit the launch file to seek `turtlebot3_bringup` instead.
 
 When seeing the error messages similar to below: 
 
-```
-shell
+```bash
 /opt/ros/noetic/bin/rosrun: /opt/ros/noetic/lib/camera_calibration/cameracalibrator.py: /usr/bin/python: bad interpreter: No such file or directory
 /opt/ros/noetic/bin/rosrun: line 150: /opt/ros/noetic/lib/camera_calibration/cameracalibrator.py: Success
 ```
 
-it means that the shell is looking for the python interpretor at the path `/usr/bin/python` which has not been existed. 
+it means that the shell is looking for the python interpreter at the path `/usr/bin/python` which has not been existed. 
 
 In most cases we do have the python interpreter, they are only at a different path; we will have to run a shell command to create a symbolic link.
 

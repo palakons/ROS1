@@ -24,6 +24,7 @@
     - [1.2.1. Build ORB_SLAM3](#121-build-orb_slam3)
     - [1.2.2. Build ROS wrapper for ORB-SLAM3](#122-build-ros-wrapper-for-orb-slam3)
     - [1.2.3. yaml for waffle](#123-yaml-for-waffle)
+      - [1.2.3.1. In case not using TurtleBot3: Waffle Pi Camera](#1231-in-case-not-using-turtlebot3-waffle-pi-camera)
     - [1.2.4. Create `launchfile`](#124-create-launchfile)
       - [1.2.4.1. Line-by-line explanation](#1241-line-by-line-explanation)
   - [1.3. Setup Camera (skip for in-class demo)](#13-setup-camera-skip-for-in-class-demo)
@@ -263,20 +264,22 @@ Viewer.ViewpointZ: -3.5 # -1.8
 Viewer.ViewpointF: 500
 ```
 
+#### 1.2.3.1. In case not using TurtleBot3: Waffle Pi Camera 
+
 *When working with the camera from other than this system*, the parameters can be found by following the section [1.3.3. Calibrate the camera](#133-calibrate-the-camera).
 
 Camera fps:
 
-```bash
-rostopic hz /raspicam_node/image/compressed
-```
+  ```bash
+  rostopic hz /raspicam_node/image/compressed
+  ```
 
 Transformation from the camera to the IMU using `tf` package.
 
-```bash
-rosrun rqt_tf_tree rqt_tf_tree
-rosrun tf tf_echo camera_rgb_frame imu_link
-```
+  ```bash
+  rosrun rqt_tf_tree rqt_tf_tree
+  rosrun tf tf_echo camera_rgb_frame imu_link
+  ```
 
 
 ### 1.2.4. Create `launchfile`
@@ -636,6 +639,17 @@ Starting from all terminal closed...
     ```bash
     roscore
     ```
+- On TurtleBot3
+  - Terminal #1: Bring up TurtleBot3
+    ```bash
+    roslaunch turtlebot3_bringup turtlebot3_robot.launch
+    ```
+  - Terminal #2: Start RPI Camera
+    ```bash
+    roslaunch turtlebot3_bringup turtlebot3_rpicamera.launch
+    ```
+
+- On MASTER/PC
   - Terminal #2: Launch the `launchfile`
 
     ```bash
@@ -646,15 +660,7 @@ Starting from all terminal closed...
     ```bash
     roslaunch turtlebot3_teleop turtlebot3_teleop_key.launch
     ```
-- On TurtleBot3
-  - Terminal #1: Bring up TurtleBot3
-    ```bash
-    roslaunch turtlebot3_bringup turtlebot3_robot.launch
-    ```
-  - Terminal #2: Start RPI Camera
-    ```bash
-    roslaunch turtlebot3_bringup turtlebot3_rpicamera.launch
-    ```
+
 
 
 

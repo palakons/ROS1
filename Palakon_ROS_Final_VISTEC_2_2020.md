@@ -1,15 +1,15 @@
-### 0.1. Monocular ORB-SLAM3 on TurtleBot3: Waffle Pi   ###
+### Monocular ORB-SLAM3 on TurtleBot3: Waffle Pi   ###
 
 
 **Description**: This tutorial demonstrates SLAM with the newly-released ORB_SLAM3 on a TurtleBot3 Waffle and ROS1. With the bag file provided, we should get the results below: 
 
 [![4x Video](https://img.youtube.com/vi/DjHpCrAqFkc/0.jpg)](https://www.youtube.com/watch?v=DjHpCrAqFkc)
 
-The system overview for the essential part is shown below:
+The system overview for the essential part is below:
 
 ![overview](overview.png)
 
-From the compressed video stream from TurtleBot3, a node republishes and uncompresses the stream. The wrapper node will then take the video stream and feed it into the actual ORB_SLAM3 node to perform the SLAM.
+From the compressed video stream from TurtleBot3, a node republishes and un-compresses the stream. The wrapper node will then take the video stream and feed it into the actual ORB_SLAM3 node to perform the SLAM.
 
 **Environment**: ROS1 Noetic / Ubuntu 20.04.2 LTS / [TurtleBot3: Waffle Pi](https://www.robotis.us/turtlebot-3-waffle-pi/) ([Raspberry Pi Camera Module v2](https://www.raspberrypi.org/products/camera-module-v2/))
 
@@ -55,7 +55,6 @@ From the compressed video stream from TurtleBot3, a node republishes and uncompr
   - [6.5. CMake: `MESSAGE` called with incorrect number of arguments](#65-cmake-message-called-with-incorrect-number-of-arguments)
   - [6.6. `[orb_slam3_mono_node-x] process has died`](#66-orb_slam3_mono_node-x-process-has-died)
     - [6.6.1. Segmentation fault (core dumped)](#661-segmentation-fault-core-dumped)
-    - [6.6.2. OpenCV Error: Assertion failed](#662-opencv-error-assertion-failed)
 - [7. Additional Resources](#7-additional-resources)
 
 
@@ -153,6 +152,17 @@ sudo make install
 ls /usr/local/lib | grep libopencv_core
 ls /usr/lib | grep libopencv_core
 ```
+Should see this
+
+```bash
+pkg-config --cflags opencv4
+```
+
+Should see this
+
+```bash
+-I/usr/include/opencv4/opencv -I/usr/include/opencv4
+```
 
 ### 1.4. [Eigen](https://eigen.tuxfamily.org/)
 
@@ -191,7 +201,7 @@ Then build:
 ./build_ros.sh
 ```
 
-If there is an error, try editing two source files as per the [1.6.1. `operator/`](#161-operator) in [1.6. Troubleshooting](#16-troubleshooting).
+If there is an error, check [6. Troubleshooting](#6-troubleshooting).
 
 ### 2.2. Build [ROS wrapper for ORB-SLAM3](https://github.com/thien94/orb_slam3_ros_wrapper)
 
@@ -250,7 +260,7 @@ Camera.height: 480
 # Camera frames per second 
 Camera.fps: 15.0
 
-# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+# Color order of the images (0: BGR, 1: RGB, ignored if images are grayscale)
 Camera.RGB: 1
 
 # Transformation from camera to body-frame (imu)
@@ -307,7 +317,7 @@ Viewer.ViewpointF: 500
 
 #### 2.3.1. In case not using a Camera from TurtleBot3: Waffle Pi  
 
-*When working with the camera from other than this system*, to update the yaml file above, the parameters can be found by following the section [1.3.3. Calibrate the camera](#133-calibrate-the-camera), and shell commands below:
+*When working with the camera from other than this system*, to update the yaml file above, follow the section [3.3. Calibrate the camera](#33-calibrate-the-camera), and shell commands below:
 
 Camera fps to update `Camera.fps:`:
 
@@ -367,7 +377,7 @@ These are the two nodes to view the videos stream from the TurtleBot3 and ROS's 
 <node name="image_to_raw" pkg="image_transport" type="republish" output="screen" args="compressed in:=/raspicam_node/image/ raw out:=/camera/image_raw">
 </node>
 ```
-The video stream from `rpicam` is compressed by hardware, by default for the good reasons. This, on the other hand, cannot be digested directly by the SLAM node. The `image_to_raw` node is for converting such `compressed` streams back to `raw` stream. `/camera/image_raw` is the topic that our SLAM node is subscribing to.
+The `rpicam` hardware compresses the video stream by default for the good reasons. The SLAM node cannot digest the compressed stream directly. The `image_to_raw` node is for converting such `compressed` streams back to `raw` stream. `/camera/image_raw` is the topic that our SLAM node is subscribing to.
 
 ```xml
 <!-- ORB-SLAM3 -->
@@ -389,7 +399,7 @@ Above is the parameters for the ORB_SLAM3 algorithms. We can see that the node w
 
 ### 3.1. Confirm RPI Camera
 
-We follow the official [Raspberry Pi Camera tutorial](https://emanual.robotis.com/docs/en/platform/turtlebot3/appendix_raspi_cam/) to make sure that the RPI Camera is installed properly.
+We follow the official [Raspberry Pi Camera tutorial](https://emanual.robotis.com/docs/en/platform/turtlebot3/appendix_raspi_cam/).
 
 ```bash 
 ssh pi@<turtlebot's IP Address>
@@ -402,7 +412,7 @@ sudo raspi-config
 ```
 
 Select `Interfacing Options`, and `Camera`.
-After enabling the camera, you should see the screen below with the message 'The camera interface is enabled' similar to below.
+After enabling the camera, you should see the screen below with the message 'The camera interface is enabled' below.
 
 ![Camera Enable Screen](https://emanual.robotis.com/assets/images/platform/turtlebot3/appendix_raspi_cam/pi-cam-hardware-setting-5.png)
 
@@ -452,7 +462,7 @@ Then, try asking the TurtleBot3 to publish the image:
 roslaunch turtlebot3_bringup turtlebot3_rpicamera.launch
 ```
 
-On PC (with correctly configured MASTER IP Addresses), use `rqt_image_view` to show the image.
+On PC (with the configured MASTER IP Addresses), use `rqt_image_view` to show the image.
 
 ```bash
 rqt_image_view
@@ -462,14 +472,14 @@ rqt_image_view
 
 ### 3.3. Calibrate the camera
 
-There are multiple ways on obtaining the camera *intrinsic parameters*, one of them is outlined below:
+There are ways on obtaining the camera *intrinsic parameters*, one of them is below:
 
 #### 3.3.1. Prepare the Calibration Pattern
 - Print out on paper the [Checkerboard Pattern](https://www.mrpt.org/downloads/camera-calibration-checker-board_9x7.pdf). This particular pattern size is a `9x7` or `7x9` pattern (counting the *internal corners*). You can make it durable and your friend will borrow it to calibrate their cameras for years to come.
--  Attach the paper to a moveable, flat surface (corrugated board, future board, or a laptop, maybe...) because we need to move the pattern around in front of the camera. Or you could attach the pattern to a wall and move the camera; it is possible, but less convenient.
+-  Attach the paper to a moveable, flat surface (corrugated board, future board, or a laptop, etc.) because we need to move the pattern around in front of the camera. Or you could attach the pattern to a wall and move the camera; possible, but less convenient.
 -  Measure the width of *one* square. It could be 0.02 m as the file mentioned, or a different size if you print it on, for example, an A3 paper.
 
-I used a different calibration pattern (a *loan for use* from a friend so I do not have to go through the steps above). The specifications are shown below:
+I used a different calibration pattern (a *loan for use* from a friend so I do not have to go through the steps above). The specifications are below:
 
 | Calibration Pattern | My friend's | This tutorial's |
 | ------------------- | ----------- | --------------- |
@@ -494,7 +504,7 @@ I used a different calibration pattern (a *loan for use* from a friend so I do n
 
   - Terminal#2: To start the calibration node
     
-    Use your `--size` and `--square` parameters as per [1.3.3.1.](#1331-prepare-the-calibration-pattern); it could look similar to below:
+    Use your `--size` and `--square` parameters as per [3.3.1. Prepare the Calibration Pattern](#331-prepare-the-calibration-pattern); it could look similar to below:
     ```bash
     rosrun camera_calibration cameracalibrator.py --size 9x7 --square 0.02 image:=/camera/image_raw camera:=/raspicam_node
     ```
@@ -642,7 +652,7 @@ We can see the same calibration results inside the terminal, in yaml, and in tex
 
 ## 4. Start SLAM
 
-There are two ways we can try in this tutorial: BAG file (VLL Room [VISTEC](vistec.ac.th)/Loop-closures), and video stream from the TurtleBot3
+There are two ways we can try in this tutorial: BAG file, and video stream from the TurtleBot3
 
 ### 4.1. SLAM from BAG file data
   
@@ -768,7 +778,7 @@ Replace with
 find_package(OpenCV 4.0 REQUIRED PATHS "/usr/include/opencv4" )
 ```
 
-The `"/usr/include/opencv4"` was obtained from [1.1.3.1. Check opencv4](#1131-check-opencv4)
+The `"/usr/include/opencv4"` was obtained from [1.3.3. Check OpenCV4](#133-check-opencv4)
 ### 6.3. Resource not found: turtlebot_bringup
 ```bash
 Resource not found: turtlebot_bringup
@@ -786,9 +796,9 @@ When seeing the error messages similar to below:
 /opt/ros/noetic/bin/rosrun: line 150: /opt/ros/noetic/lib/camera_calibration/cameracalibrator.py: Success
 ```
 
-it means that the shell is looking for the python interpreter at the path `/usr/bin/python` which has not been existed. 
+it means that the shell is looking for the python interpreter at the path `/usr/bin/python` which is not existed. 
 
-In most cases we do have the python interpreter, they are only at a different path; we will have to run a shell command to create a symbolic link.
+In most cases we do have the python interpreter, but at a different path; we will have to run a shell command to create a symbolic link.
 
 ```bash
 cd /usr/bin
@@ -797,7 +807,7 @@ sudo ln -fs /usr/bin/python3 python
 
 ### 6.5. CMake: `MESSAGE` called with incorrect number of arguments 
 
-Can be solved by commenting out the line 45 of `~/catkin_ws/src/ORB_SLAM3/CMakeLists.txt`:
+To solve, commenting out the line 45 of `~/catkin_ws/src/ORB_SLAM3/CMakeLists.txt`:
 
 ```cmake
 ...
@@ -815,7 +825,7 @@ When seeing the error messages similar to below:
 
 ![process has died](process_died.png)
 
-It is because the `Mono` node inside `ORB_SLAM3` package has failed running. We could investigate further by running:
+We could investigate further by running:
 
 ```bash
 rosrun ORB_SLAM3 Mono ~/catkin_ws/ORB_SLAM3/Vocabulary/ORBvoc.txt ~/catkin_ws/src/ORB_SLAM3/Examples/Monocular-Inertial/waffle.yaml
@@ -828,42 +838,8 @@ Observe the output from the terminal, they can be one of the two cases below:
 ![segmentation Faults](seg_faults.png)
 (cr. Joe Chu)
 
-```bash
-rosrun --prefix 'gdb -ex run --args'  package   node
-```
+If this happens, do try on a machine with the recommended OS and ROS version.
 
-#### 6.6.2. OpenCV Error: Assertion failed
-
-![process has died](opencv_dup.png)
-(cr. Naris)
-
-This could be because there are multiple version of OpenCV installations existed.
-
-To check if there is a conflicts, run the command below:
-
-```bash
-ls /usr/local/lib
-```
-
-The results can be below:
-
-```bash
-Desired=Unknown/Install/Remove/Purge/Hold
-| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend
-|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)
-||/ Name                           Version      Architecture Description
-+++-==============================-============-============-=========================================================================
-ii  libopencv-calib3d-dev:amd64    4.2.0+dfsg-5 amd64        development files for libopencv-calib3d4.2
-ii  libopencv-calib3d4.2:amd64     4.2.0+dfsg-5 amd64        computer vision Camera Calibration library
-ii  libopencv-contrib-dev:amd64    4.2.0+dfsg-5 amd64        development files for libopencv-contrib4.2
-ii  libopencv-contrib4.2:amd64     4.2.0+dfsg-5 amd64        computer vision contrlib library
-ii  libopencv-core-dev:amd64       4.2.0+dfsg-5 amd64        development files for libopencv-core4.2
-ii  libopencv-core4.2:amd64        4.2.0+dfsg-5 amd64        computer vision core library
-ii  libopencv-dev                  4.2.0+dfsg-5 amd64        development files for opencv
-```
-
-I seems to have only OpenCV version 4.2.0.
-But if your system has multiple version installed. Let's remove them all, and reinstall.
 
 
 

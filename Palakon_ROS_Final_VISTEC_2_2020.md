@@ -24,7 +24,8 @@ From the compressed video stream from TurtleBot3, a node republishes and uncompr
   - [1.2. Pangolin](#12-pangolin)
   - [1.3. OpenCV4](#13-opencv4)
     - [1.3.1. Download the packages:](#131-download-the-packages)
-    - [1.3.2. Build OpenCV4](#132-build-opencv4)
+    - [1.3.2. Build OpenCV4 (Skip if you have v. 3.3 or later)](#132-build-opencv4-skip-if-you-have-v-33-or-later)
+      - [1.3.2.1. Check previous installations](#1321-check-previous-installations)
     - [1.3.3. Check OpenCV4](#133-check-opencv4)
   - [1.4. Eigen](#14-eigen)
 - [2. Setup our SLAM System](#2-setup-our-slam-system)
@@ -98,6 +99,7 @@ Install OpenCV4 (this will take the whole night)
 #### 1.3.1. Download the packages:
 
 ```bash
+cd ~
 # Install minimal prerequisites (Ubuntu 18.04 as reference)
 sudo apt update && sudo apt install -y cmake g++ wget unzip
 # Download and unpack sources
@@ -109,15 +111,37 @@ unzip opencv_contrib.zip
 rm *.zip
 ```
 
-#### 1.3.2. Build OpenCV4
+#### 1.3.2. Build OpenCV4 (Skip if you have v. 3.3 or later)
+
+##### 1.3.2.1. Check previous installations
+
+Check below location if/what version we have OpenCV installed:
+
+```bash
+ls /usr/local/lib | grep libopencv_core
+ls /usr/lib | grep libopencv_core
+```
+
+This can be one of the three cases:
+
+- If you already have OpenCV v. 3.3 or later, skip this OpenCV installation.
+- If you do not have any OpenCV installed, do proceed with this installation
+- If you have OpenCV v. earlier than 3.3, your OpenCV is too old.
+  - First, remove the current OpenCV by running:
+    ```bash
+    sudo rm /usr/local/{bin,lib}/*opencv* 
+    ```
+  - Then, proceed with the OpenCV installation
 
 
 ```bash
+cd ~/opencv
 # Create build directory and switch into it
 mkdir -p build && cd build
 # Configure
 cmake -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib-master/modules ../opencv-master
-make -j5
+NPROC=$(nproc)
+make -j$NPROC
 # Build
 cmake --build .
 sudo make install
@@ -126,13 +150,8 @@ sudo make install
 #### 1.3.3. Check OpenCV4
 
 ```bash
-pkg-config --cflags opencv4
-```
-
-Should see this
-
-```bash
--I/usr/include/opencv4/opencv -I/usr/include/opencv4
+ls /usr/local/lib | grep libopencv_core
+ls /usr/lib | grep libopencv_core
 ```
 
 ### 1.4. [Eigen](https://eigen.tuxfamily.org/)
@@ -809,10 +828,43 @@ Observe the output from the terminal, they can be one of the two cases below:
 ![segmentation Faults](seg_faults.png)
 (cr. Joe Chu)
 
+```bash
+rosrun --prefix 'gdb -ex run --args'  package   node
+```
+
 #### 6.6.2. OpenCV Error: Assertion failed
 
 ![process has died](opencv_dup.png)
 (cr. Naris)
+
+This could be because there are multiple version of OpenCV installations existed.
+
+To check if there is a conflicts, run the command below:
+
+```bash
+ls /usr/local/lib
+```
+
+The results can be below:
+
+```bash
+Desired=Unknown/Install/Remove/Purge/Hold
+| Status=Not/Inst/Conf-files/Unpacked/halF-conf/Half-inst/trig-aWait/Trig-pend
+|/ Err?=(none)/Reinst-required (Status,Err: uppercase=bad)
+||/ Name                           Version      Architecture Description
++++-==============================-============-============-=========================================================================
+ii  libopencv-calib3d-dev:amd64    4.2.0+dfsg-5 amd64        development files for libopencv-calib3d4.2
+ii  libopencv-calib3d4.2:amd64     4.2.0+dfsg-5 amd64        computer vision Camera Calibration library
+ii  libopencv-contrib-dev:amd64    4.2.0+dfsg-5 amd64        development files for libopencv-contrib4.2
+ii  libopencv-contrib4.2:amd64     4.2.0+dfsg-5 amd64        computer vision contrlib library
+ii  libopencv-core-dev:amd64       4.2.0+dfsg-5 amd64        development files for libopencv-core4.2
+ii  libopencv-core4.2:amd64        4.2.0+dfsg-5 amd64        computer vision core library
+ii  libopencv-dev                  4.2.0+dfsg-5 amd64        development files for opencv
+```
+
+I seems to have only OpenCV version 4.2.0.
+But if your system has multiple version installed. Let's remove them all, and reinstall.
+
 
 
 ## 7. Additional Resources
